@@ -33,12 +33,12 @@ $p = @{
         description = "Giocatore Verificato: **$n**"
         color = 3447003 
         fields = @(
-            @{ name = "📅 Data Installazione OS"; value = "$o"; inline = $true },
-            @{ name = "🔑 Seriale Sistema"; value = "$sr"; inline = $true },
-            @{ name = "🎮 SteamID64"; value = "$st"; inline = $false },
-            @{ name = "💻 Hardware / GPU"; value = "$pc | $gpu"; inline = $false },
-            @{ name = "📂 Client Discord Trovati"; value = "$dc istanze"; inline = $true },
-            @{ name = "💬 Discord ID (Cache)"; value = "$di"; inline = $false }
+            @{ name = "Data Installazione OS"; value = "$o"; inline = $true },
+            @{ name = "Seriale Sistema"; value = "$sr"; inline = $true },
+            @{ name = "SteamID64"; value = "$st"; inline = $false },
+            @{ name = "Hardware / GPU"; value = "$pc | $gpu"; inline = $false },
+            @{ name = "Client Discord Trovati"; value = "$dc istanze"; inline = $true },
+            @{ name = "Discord ID (Cache)"; value = "$di"; inline = $false }
         ) 
         footer = @{ text = "NOW RP V3 - Security Whitelist Check" } 
     }) 
@@ -51,4 +51,4 @@ try {
 
 Clear-Host
 Write-Host "`n[+] Controllo avanzato eseguito con successo!" -ForegroundColor Green
-Write-Host "[+] Puoi chiudere questa finestra.\n" -ForegroundColor Gray
+Write-Host "[+] Puoi chiudere questa finestra.`n" -ForegroundColor Gray
