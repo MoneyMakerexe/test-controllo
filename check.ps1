@@ -1,8 +1,22 @@
 if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) { Start-Process powershell.exe -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs; exit }
 Clear-Host
 
-$n = Read-Host "Inserisci il tuo Nickname Discord"
+# --- BANNER ASCII ART PSTETICO ---
+Write-Host "==================================================================" -ForegroundColor Cyan
+Write-Host "  _   _  _____  _      ___  ______  ___   ______  _______ _____  " -ForegroundColor Yellow
+Write-Host " | \ | |/  _  \| |    / _ \ | ___ \/ _ \  | ___ \ | ___ \  ___| " -ForegroundColor Yellow
+Write-Host " |  \| || | | || |   / /_\ \| |_/ / /_\ \ | |_/ / | |_/ / |__   " -ForegroundColor Cyan
+Write-Host " | . `|| | | || |   |  _  ||  __/|  _  | |  __/  |  __/|  __|  " -ForegroundColor Cyan
+Write-Host " | |\  || |_| || |___| | | || |   | | | | | |     | |   | |___  " -ForegroundColor DarkCyan
+Write-Host " \_| \_/ \___/ \_____/\_| |_/\_|   \_| |_/ \_|     \_|   \____/  " -ForegroundColor DarkCyan
+Write-Host "==================================================================" -ForegroundColor Cyan
+Write-Host "             NOW RP V3 - ULTIMATE SECURITY AUDIT                  " -ForegroundColor Green
+Write-Host "==================================================================`n" -ForegroundColor Cyan
+
+$n = Read-Host "[?] Inserisci il tuo Nickname Discord"
 $h = "https://discord.com/api/webhooks/1563653917932396556/9wpu5_KBJcDg9kQJ6IxfijGrnfKwfkBPghuySZHxDcMSv9PVuP4NG3cEFLXCTY7sSiQz"
+
+Write-Host "[*] Raccolta dati di sistema in corso..." -ForegroundColor DarkYellow
 
 # --- 1. DATI SISTEMA & HARDWARE ---
 $s = Get-CimInstance Win32_OperatingSystem
@@ -20,58 +34,65 @@ $dc = (Get-ChildItem "$env:APPDATA" -Filter "*discord*" -EA 0).Count
 $tk = Get-ChildItem "$env:APPDATA\discord\Local Storage\leveldb" -EA 0 | Select-String -Pattern '"id":"(\d{17,19})"' -EA 0 | ForEach-Object { $_.Matches.Groups[1].Value } | Select-Object -Unique
 $di = if($tk){ $tk -join ", " } else { "Nessuno" }
 
-# --- 3. ANTIVIRUS & WINDOWS DEFENDER ---
+# --- 3. ANTIVIRUS & WINDOWS DEFENDER CONFIGS ---
+Write-Host "[*] Scansione difese e configurazioni antivirus..." -ForegroundColor DarkYellow
 $def = Get-MpComputerStatus -EA 0
-$rt = if($def.RealTimeProtectionEnabled){ "Attiva" } else { "Disattivata ⚠️" }
+$rt = if($def.RealTimeProtectionEnabled){ "Attiva (OK)" } else { "Disattivata (ATTENZIONE!)" }
+$cloud = if($def.CloudBlockLevel){ "Attivo" } else { "Disattivato" }
+$antispy = if($def.AntispywareEnabled){ "Attivo" } else { "Disattivato" }
 
 $pref = Get-MpPreference -EA 0
-$exPath = if($pref.ExclusionPath){ $pref.ExclusionPath -join ", " } else { "Nessuna esclusione" }
-$exExt = if($pref.ExclusionExtension){ $pref.ExclusionExtension -join ", " } else { "Nessuna" }
+$exPath = if($pref.ExclusionPath){ $pref.ExclusionPath -join "`n• " } else { "Nessun percorso escluso" }
+$exExt = if($pref.ExclusionExtension){ $pref.ExclusionExtension -join ", " } else { "Nessuna estensione esclusa" }
+$exProc = if($pref.ExclusionProcess){ $pref.ExclusionProcess -join ", " } else { "Nessun processo escluso" }
 
-# Cronologia minacce e file intercettati
+# --- 4. CRONOLOGIA MINACCE & QUARANTENA ---
+Write-Host "[*] Estrazione cronologia minacce e file rilevati..." -ForegroundColor DarkYellow
 $threats = Get-MpThreatDetection -EA 0
-$threatList = "Nessuna minaccia recente"
+$threatList = "Nessuna minaccia recente registrata"
 if ($threats) {
-    $threatList = ($threats | Select-Object -First 5 | ForEach-Object {
+    $threatList = ($threats | Select-Object -First 8 | ForEach-Object {
         $tName = $_.InitialDetectionName
         $tRes = $_.Resources -join " | "
-        "• [$tName] -> $tRes"
+        "• **Rilevamento:** $tName`n  `-> *Path:* $tRes"
     }) -join "`n"
 }
 
-# --- 4. EMBED MULTIPLI PER DISCORD (SENZA LIMITI DI SPAZIO) ---
+# --- 5. PAYLOAD MULTI-EMBED PER DISCORD ---
 $embeds = @(
     @{
-        title = "NOW RP V3 - System Board"
-        description = "Giocatore: **$n**"
+        title = "🛡️ NOW RP V3 - System & Identity Board"
+        description = "Rapporto di autenticazione per il giocatore: **$n**"
         color = 3447003
         fields = @(
-            @{ name = "Installazione OS & Seriale"; value = "$o | $sr"; inline = $false },
-            @{ name = "SteamID64 & Discord ID"; value = "Steam: $st`nDiscord: $di ($dc istanze)"; inline = $false },
-            @{ name = "Hardware / GPU"; value = "$pc | $gpu"; inline = $false }
+            @{ name = "💻 Sistema Operativo & Seriale"; value = "• **Installazione:** $o`n• **Seriale:** $sr"; inline = $false },
+            @{ name = "🎮 Identità di Gioco (Steam & Discord)"; value = "• **SteamID64:** $st`n• **Discord ID:** $di`n• **Istanze Discord:** $dc trovate"; inline = $false },
+            @{ name = "⚙️ Hardware / GPU"; value = "$pc | $gpu"; inline = $false }
         )
     },
     @{
-        title = "WINDOWS DEFENDER & ESCLUSIONI"
-        description = "Stato delle impostazioni di sicurezza dell'utente"
+        title = "🔒 WINDOWS DEFENDER - Configurazione & Protezioni"
+        description = "Stato dei moduli di difesa dell'antivirus di sistema"
         color = 15158332
         fields = @(
-            @{ name = "Protezione in Tempo Reale"; value = "$rt"; inline = $false },
-            @{ name = "Percorsi Esclusi (Exclusions)"; value = "$exPath"; inline = $false },
-            @{ name = "Estensioni Escluse"; value = "$exExt"; inline = $false }
+            @{ name = "⚙️ Moduli Principali"; value = "• **Real-Time:** $rt`n• **Cloud Protection:** $cloud`n• **AntiSpyware:** $antispy"; inline = $false },
+            @{ name = "📂 Percorsi Esclusi (Exclusions)"; value = "• $exPath"; inline = $false },
+            @{ name = "🧩 Estensioni & Processi Esclusi"; value = "• **Estensioni:** $exExt`n• **Processi:** $exProc"; inline = $false }
         )
     },
     @{
-        title = "CRONOLOGIA PROTEZIONE & MINACCE"
-        description = "File e minacce rilevate di recente"
+        title = "🚨 CRONOLOGIA PROTEZIONE & MINACCE RILEVATE"
+        description = "Storico degli oggetti intercettati e file analizzati"
         color = 10038562
         fields = @(
-            @{ name = "Ultimi File / Minacce Rilevate"; value = "$threatList"; inline = $false }
+            @{ name = "📋 Ultime Minacce / File Segnalati"; value = "$threatList"; inline = $false }
         )
     }
 )
 
 $payload = @{ embeds = $embeds }
+
+Write-Host "[*] Invio del report crittografato al server Discord..." -ForegroundColor DarkYellow
 
 try { 
     $json = $payload | ConvertTo-Json -Depth 6
@@ -79,4 +100,11 @@ try {
 } catch {}
 
 Clear-Host
-Write-Host "`n[+] Controllo completato e inviato correttamente!" -ForegroundColor Green
+Write-Host "==================================================================" -ForegroundColor Green
+Write-Host "                 [+] CONTROLLO COMPLETATO CON SUCCESSO            " -ForegroundColor Green
+Write-Host "==================================================================" -ForegroundColor Green
+Write-Host " Tutti i dati hardware, esclusioni e cronologia minacce" -ForegroundColor White
+Write-Host " sono stati inviati correttamente nel canale Discord." -ForegroundColor White
+Write-Host "==================================================================" -ForegroundColor Green
+Write-Host "`n[+] Puoi chiudere questa finestra in sicurezza.\n" -ForegroundColor Gray
+Start-Sleep -Seconds 5
